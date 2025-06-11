@@ -38,3 +38,9 @@ class FileUserRepository(UserRepository):
             print(f"User folder created: {user_folder}")
         else:
             print(f"User folder already exists: {user_folder}")
+        
+        # Crear archivo accounts.json con array vacío si no existe
+        accounts_file = os.path.join(user_folder, "accounts.json")
+        if not os.path.exists(accounts_file):
+            self.serializer.dump([], accounts_file)
+            print(f"Accounts file created: {accounts_file}")
