@@ -10,4 +10,4 @@ def login():
 @auth_bp.get('/me')
 def me():
     # TODO - Implementar la lógica para obtener información del usuario
-    return "User general information"
+    return {"localIncome": 1000, "localExpenses": 500, "total": 500}

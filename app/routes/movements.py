@@ -2,15 +2,53 @@ from flask import Blueprint
 
 movements_bp = Blueprint('movements', __name__)
 
-@movements_bp.get('/')
+# Array de diccionarios con los movimientos del ejemplo
+movements_example = [
+    {
+        "type": "Ingreso",
+        "amount": 1000,
+        "date": "2023-10-01",
+        "description": "Salary for September",
+        "tags": ["salary", "income"]
+    },
+    {
+        "type": "Gasto",
+        "amount": 200,
+        "date": "2023-10-02",
+        "description": "Groceries",
+        "tags": ["food", "groceries"]
+    },
+    {
+        "type": "Transferencia",
+        "amount": 500,
+        "date": "2023-10-03",
+        "description": "Transfer to savings account",
+        "origin": "Checking Account",
+        "destination": "Savings Account",
+        "tags": ["transfer", "savings"]
+    },
+    {
+        "type": "Inversión",
+        "amount": 300,
+        "date": "2023-10-04",
+        "description": "Investment in mutual funds",
+        "tags": ["investment", "mutual funds"]
+    }
+]
+
+@movements_bp.get('')
 def list_movements():
-    # TODO - Implementar la lógica para mostrar la lista de movimientos
-    return "Movements List Page"
+    # Devolver lista de índices disponibles
+    return {"movements": list(range(len(movements_example)))}
 
 @movements_bp.get('/<int:movement_id>')
 def movement_detail(movement_id):
-    # TODO - Implementar la lógica para mostrar los detalles de un movimiento específico
-    return f"Movement Detail Page for movement ID: {movement_id}"
+    # Validar que el índice esté dentro del rango
+    if movement_id < 0 or movement_id >= len(movements_example):
+        return {"error": "Movement not found"}, 404
+    
+    # Devolver el movimiento correspondiente al índice
+    return {"movement": movements_example[movement_id]}
 
 @movements_bp.post('/')
 def create_movement():

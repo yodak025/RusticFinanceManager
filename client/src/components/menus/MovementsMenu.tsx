@@ -1,4 +1,5 @@
 import { type ColumnDef } from "@tanstack/react-table";
+import { useState, useEffect } from "react";
 
 enum MovementType {
   INCOME = "Ingreso",
@@ -17,39 +18,6 @@ type Movement = {
   tags?: string[];
 };
 
-const movementsExample: Movement[] = [
-  {
-    type: MovementType.INCOME,
-    amount: 1000,
-    date: "2023-10-01",
-    description: "Salary for September",
-    tags: ["salary", "income"],
-  },
-  {
-    type: MovementType.EXPENSE,
-    amount: 200,
-    date: "2023-10-02",
-    description: "Groceries",
-    tags: ["food", "groceries"],
-  },
-  {
-    type: MovementType.TRANSFER,
-    amount: 500,
-    date: "2023-10-03",
-    description: "Transfer to savings account",
-    origin: "Checking Account",
-    destination: "Savings Account",
-    tags: ["transfer", "savings"],
-  },
-  {
-    type: MovementType.INVESTMENT,
-    amount: 300,
-    date: "2023-10-04",
-    description: "Investment in mutual funds",
-    tags: ["investment", "mutual funds"],
-  },
-];
-
 const columns: ColumnDef<Movement>[] = [
   {
     accessorKey: "date",
@@ -62,7 +30,7 @@ const columns: ColumnDef<Movement>[] = [
   {
     accessorKey: "amount",
     header: "Cantidad",
-    cell: (info) => `$${(info.getValue() as number).toFixed(2)}`,
+    cell: (info) => `${(info.getValue() as number).toFixed(2)}€`,
   },
   {
     accessorKey: "description",
@@ -81,6 +49,88 @@ const columns: ColumnDef<Movement>[] = [
     header: "Tags",
   },
 ];
+
+const fetchMovementsIds = async (): Promise<number[]> => {
+  try {
+    const response = await fetch("/movements");
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Verificar que el objeto tenga la clave 'movements'
+    if (!data || typeof data !== "object" || !("movements" in data)) {
+      throw new Error("Invalid response format: missing movements key");
+    }
+
+    // Verificar que movements sea un array
+    if (!Array.isArray(data.movements)) {
+      throw new Error("Invalid response format: movements is not an array");
+    }
+    data.movements.forEach((movementIds: unknown) => {
+      if (typeof movementIds !== "number") {
+        throw new Error(
+          "Invalid response format: each movement should be a number"
+        );
+      }
+    });
+    return data.movements;
+  } catch (error) {
+    console.error("Error fetching movements:", error);
+    throw error;
+  }
+};
+
+const fetchMovementById = async (id: number): Promise<Movement> => {
+  try {
+    const response = await fetch(`/movements/${id}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Verificar que el objeto tenga la clave 'movement'
+    if (!data || typeof data !== "object" || !("movement" in data)) {
+      throw new Error("Invalid response format: missing movement key");
+    }
+
+    const movement = data.movement;
+
+    // Verificar que movement sea un objeto válido
+    if (!movement || typeof movement !== "object") {
+      throw new Error("Invalid response format: movement is not an object");
+    }
+
+    // Verificar propiedades requeridas
+    if (
+      !movement.type ||
+      !Object.values(MovementType).includes(movement.type)
+    ) {
+      throw new Error("Invalid movement: invalid or missing type");
+    }
+
+    if (typeof movement.amount !== "number") {
+      throw new Error("Invalid movement: amount must be a number");
+    }
+
+    if (typeof movement.date !== "string") {
+      throw new Error("Invalid movement: date must be a string");
+    }
+
+    if (typeof movement.description !== "string") {
+      throw new Error("Invalid movement: description must be a string");
+    }
+
+    return movement as Movement;
+  } catch (error) {
+    console.error(`Error fetching movement ${id}:`, error);
+    throw error;
+  }
+};
 
 import { flexRender } from "@tanstack/react-table";
 
@@ -113,14 +163,32 @@ const MovementsTableContent = ({ table }: any) => {
 };
 
 export default function MovementsMenu() {
+  const [movements, setMovements] = useState<Movement[] | null>(null);
+
+  useEffect(() => {
+  fetchMovementsIds()
+    .then((ids) => Promise.all(ids.map((id) => fetchMovementById(id))))
+    .then((fetchedMovements) => {
+      setMovements(fetchedMovements);
+      console.log("Movements fetched:", fetchedMovements);
+    })
+    .catch((error) => console.error("Error cargando movimientos:", error));
+}, []);
+
   return (
     <div className="p-4">
-      <BaseTable data={movementsExample} columns={columns}>
-        {(table: any) => (
-          // Tu contenido que usa table
-          <MovementsTableContent table={table} />
-        )}
-      </BaseTable>
+      { !movements ? (
+        <div className="flex justify-center items-center h-24">
+          <p>Cargando movimientos...</p>
+        </div>
+      ) : (
+        <BaseTable data={movements} columns={columns}>
+          {(table: any) => (
+            // Tu contenido que usa table
+            <MovementsTableContent table={table} />
+          )}
+        </BaseTable>
+      )}
     </div>
   );
 }
