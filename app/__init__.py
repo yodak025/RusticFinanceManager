@@ -1,5 +1,5 @@
 from flask import Flask
-from database.rustic_database import RusticDatabase
+from .database.rustic_database import RusticDatabase
 from os import path
 
 

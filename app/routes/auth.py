@@ -1,13 +1,37 @@
-from flask import Blueprint
+from flask import Blueprint, current_app
+from flask import request, jsonify
 
 auth_bp = Blueprint('auth', __name__)
 
-@auth_bp.get('/login')
+@auth_bp.post('/login')
 def login():
-    # TODO - Implementar la lógica de inicio de sesión
-    return "Login Page"
+    data = request.get_json()
+    
+    if not data or 'username' not in data:
+        return jsonify({'error': 'Username is required'}), 400
+    
+    user = current_app.config['DATABASE'].read_user(data['username'])
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    response = jsonify(user)
+    response.set_cookie('username', user["name"])
+    return response
+    
 
 @auth_bp.get('/me')
 def me():
-    # TODO - Implementar la lógica para obtener información del usuario
-    return {"localIncome": 1000, "localExpenses": 500, "total": 500}
+    username = request.cookies.get('username')
+    
+    if not username:
+        return jsonify({'error': 'No username cookie found'}), 401
+    
+    user = current_app.config['DATABASE'].read_user(username)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    return jsonify({
+        "localIncome": user.get("localIncome", -1),
+        "localExpenses": user.get("localExpenses", -1), 
+        "total": user.get("total", -1)
+    })

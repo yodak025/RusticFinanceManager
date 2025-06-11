@@ -38,13 +38,13 @@ class RusticDatabase:
         movements.append(movement)
         self.movements_repo.save(user, movements)
 
-    def read_user(self, user_name: str) -> dict:
+    def read_user(self, user_name: str) -> dict | None:
         """Get a user by name."""
         users = self.users_repo.list()
         for user in users:
             if user['name'] == user_name:
                 return user
-        raise ValueError(f"User {user_name} not found.")
+        return None
     
     def read_account(self, user: dict, account_name: str) -> dict:
         """Get an account by name for a specific user."""
