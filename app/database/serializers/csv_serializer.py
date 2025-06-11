@@ -13,17 +13,19 @@ class StdCsvSerializer(CsvSerializer):
             return rows
 
     def dump(self, rows: list, path: str):
-        if not rows: 
-            # Read original headers if file exists
-            try:
-                with open(path, "r", newline="", encoding="utf-8") as f:
-                    reader = csv.DictReader(f)
-                    fieldnames = reader.fieldnames or []
-            except FileNotFoundError:
-                fieldnames = []
-            
+        # Read original headers from file if it exists
+        original_fieldnames = []
+        try:
+            with open(path, "r", newline="", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                original_fieldnames = reader.fieldnames or []
+        except FileNotFoundError:
+            pass
+        
+        if not rows:
+            # If no rows, just write the header
             with open(path, "w", newline="", encoding="utf-8") as f:
-                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer = csv.DictWriter(f, fieldnames=original_fieldnames)
                 writer.writeheader()
             return
             
@@ -35,7 +37,10 @@ class StdCsvSerializer(CsvSerializer):
                 processed_row['tags'] = '#'.join(processed_row['tags'])
             processed_rows.append(processed_row)
         
+        # Use original fieldnames if available, otherwise use keys from first row
+        fieldnames = original_fieldnames if original_fieldnames else list(processed_rows[0].keys())
+        
         with open(path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=processed_rows[0].keys())
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(processed_rows)
