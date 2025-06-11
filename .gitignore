@@ -22,6 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-database
 venv
 __pycache__
+
+/app/database/data/
