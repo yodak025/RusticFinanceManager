@@ -1,5 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { useState, useEffect } from "react";
+import { CreateAndDeleteMov } from "../CreateAndDeleteMov";
 
 enum MovementType {
   INCOME = "Ingreso",
@@ -113,8 +114,17 @@ const fetchMovementById = async (id: number): Promise<Movement> => {
       throw new Error("Invalid movement: invalid or missing type");
     }
 
-    if (typeof movement.amount !== "number") {
-      throw new Error("Invalid movement: amount must be a number");
+    if (typeof movement.amount !== "number" && typeof movement.amount !== "string") {
+      throw new Error("Invalid movement: amount must be a number or string");
+    }
+    
+    // Convert string to number if needed
+    if (typeof movement.amount === "string") {
+      const numericAmount = parseFloat(movement.amount);
+      if (isNaN(numericAmount)) {
+      throw new Error("Invalid movement: amount string is not a valid number");
+      }
+      movement.amount = numericAmount;
     }
 
     if (typeof movement.date !== "string") {
@@ -189,6 +199,7 @@ export default function MovementsMenu() {
           )}
         </BaseTable>
       )}
+      <CreateAndDeleteMov />
     </div>
   );
 }
