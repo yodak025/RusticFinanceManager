@@ -44,3 +44,10 @@ class FileUserRepository(UserRepository):
         if not os.path.exists(accounts_file):
             self.serializer.dump([], accounts_file)
             print(f"Accounts file created: {accounts_file}")
+        
+        # Crear archivo movements.csv con header row si no existe
+        movements_file = os.path.join(user_folder, "movements.csv")
+        if not os.path.exists(movements_file):
+            with open(movements_file, 'w', newline='') as csvfile:
+                csvfile.write("type,date,amount,description,origin,destination,tags\n")
+            print(f"Movements file created: {movements_file}")
