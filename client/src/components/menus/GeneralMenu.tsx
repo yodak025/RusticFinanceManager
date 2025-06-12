@@ -1,52 +1,16 @@
 import { Card, CardContent } from "../ui/card";
 import { Component } from "../PieChart";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { type GeneralInfo } from "@/types/generalInfoTypes";
+import useFetchGeneralInfo from "@/hooks/generalInfoFetching";
 
-interface GeneralInfo {
-  localIncome: number;
-  localExpenses: number;
-  total: number;
-}
 
-const isValidGeneralInfo = (data: any): data is GeneralInfo => {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    typeof data.localIncome === "number" &&
-    typeof data.localExpenses === "number" &&
-    typeof data.total === "number"
-  );
-};
 
-const fetchGeneralInfo = async (): Promise<GeneralInfo> => {
-  try {
-    const response = await fetch("/auth/me");
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    if (isValidGeneralInfo(data)) {
-      return data;
-    } else {
-      throw new Error(
-        "La respuesta no tiene el formato esperado: {income: number, expenses: number, balance: number}"
-      );
-    }
-  } catch (error) {
-    throw new Error(
-      `Error al obtener información general: ${(error as Error).message}`
-    );
-  }
-};
 
 export default function GeneralMenu() {
   const [generalInfo, setGeneralInfo] = useState<GeneralInfo | null>(null);
-  useEffect(() => {
-    fetchGeneralInfo().then((data) => setGeneralInfo(data));
-  }, []);
+  useFetchGeneralInfo(setGeneralInfo);
 
   return (
     <article className="grid grid-cols-4 grid-rows-3 gap-10 m-5">

@@ -1,23 +1,8 @@
 import { type ColumnDef } from "@tanstack/react-table";
-import { useState, useEffect } from "react";
+import { useState} from "react";
 import { CreateAndDeleteMov } from "../CreateAndDeleteMov";
-
-enum MovementType {
-  INCOME = "Ingreso",
-  EXPENSE = "Gasto",
-  TRANSFER = "Transferencia",
-  INVESTMENT = "Inversión",
-}
-
-type Movement = {
-  type: MovementType;
-  amount: number;
-  date: string;
-  description: string;
-  origin?: string;
-  destination?: string;
-  tags?: string[];
-};
+import { type Movement} from "@/types/movementTypes";
+import useFetchMovements from "@/hooks/movementsFetching";
 
 const columns: ColumnDef<Movement>[] = [
   {
@@ -51,96 +36,7 @@ const columns: ColumnDef<Movement>[] = [
   },
 ];
 
-const fetchMovementsIds = async (): Promise<number[]> => {
-  try {
-    const response = await fetch("/movements");
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    // Verificar que el objeto tenga la clave 'movements'
-    if (!data || typeof data !== "object" || !("movements" in data)) {
-      throw new Error("Invalid response format: missing movements key");
-    }
-
-    // Verificar que movements sea un array
-    if (!Array.isArray(data.movements)) {
-      throw new Error("Invalid response format: movements is not an array");
-    }
-    data.movements.forEach((movementIds: unknown) => {
-      if (typeof movementIds !== "number") {
-        throw new Error(
-          "Invalid response format: each movement should be a number"
-        );
-      }
-    });
-    return data.movements;
-  } catch (error) {
-    console.error("Error fetching movements:", error);
-    throw error;
-  }
-};
-
-const fetchMovementById = async (id: number): Promise<Movement> => {
-  try {
-    const response = await fetch(`/movements/${id}`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    // Verificar que el objeto tenga la clave 'movement'
-    if (!data || typeof data !== "object" || !("movement" in data)) {
-      throw new Error("Invalid response format: missing movement key");
-    }
-
-    const movement = data.movement;
-
-    // Verificar que movement sea un objeto válido
-    if (!movement || typeof movement !== "object") {
-      throw new Error("Invalid response format: movement is not an object");
-    }
-
-    // Verificar propiedades requeridas
-    if (
-      !movement.type ||
-      !Object.values(MovementType).includes(movement.type)
-    ) {
-      throw new Error("Invalid movement: invalid or missing type");
-    }
-
-    if (typeof movement.amount !== "number" && typeof movement.amount !== "string") {
-      throw new Error("Invalid movement: amount must be a number or string");
-    }
-    
-    // Convert string to number if needed
-    if (typeof movement.amount === "string") {
-      const numericAmount = parseFloat(movement.amount);
-      if (isNaN(numericAmount)) {
-      throw new Error("Invalid movement: amount string is not a valid number");
-      }
-      movement.amount = numericAmount;
-    }
-
-    if (typeof movement.date !== "string") {
-      throw new Error("Invalid movement: date must be a string");
-    }
-
-    if (typeof movement.description !== "string") {
-      throw new Error("Invalid movement: description must be a string");
-    }
-
-    return movement as Movement;
-  } catch (error) {
-    console.error(`Error fetching movement ${id}:`, error);
-    throw error;
-  }
-};
 
 import { flexRender } from "@tanstack/react-table";
 
@@ -154,11 +50,18 @@ const MovementsTableContent = ({ table }: any) => {
       {table.getRowModel().rows?.length ? (
         table.getRowModel().rows.map((row: any) => (
           <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+            <>
             {row.getVisibleCells().map((cell: any) => (
               <TableCell key={cell.id}>
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </TableCell>
             ))}
+            <TableCell>
+              <button>
+                🗑️
+              </button>
+            </TableCell>
+            </>
           </TableRow>
         ))
       ) : (
@@ -168,22 +71,22 @@ const MovementsTableContent = ({ table }: any) => {
           </TableCell>
         </TableRow>
       )}
+      <TableRow>
+        <TableCell colSpan={columns.length} className="text-center p-4">
+          <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 
+           text-3xl rounded-full shadow-lg transition-colors duration-200 hover:shadow-xl"
+           >
+            +
+          </button>
+        </TableCell>
+      </TableRow>
     </>
   );
 };
 
 export default function MovementsMenu() {
   const [movements, setMovements] = useState<Movement[] | null>(null);
-
-  useEffect(() => {
-  fetchMovementsIds()
-    .then((ids) => Promise.all(ids.map((id) => fetchMovementById(id))))
-    .then((fetchedMovements) => {
-      setMovements(fetchedMovements);
-      console.log("Movements fetched:", fetchedMovements);
-    })
-    .catch((error) => console.error("Error cargando movimientos:", error));
-}, []);
+  useFetchMovements(setMovements);
 
   return (
     <div className="p-4">
