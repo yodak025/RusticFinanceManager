@@ -2,7 +2,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import { CreateAndDeleteMov } from "../CreateAndDeleteMov";
 import { type Movement } from "@/types/movementTypes";
-import useFetchMovements from "@/hooks/movementsFetching";
+import useFetchMovements, {fetchDeleteMovement} from "@/hooks/movementsFetching";
 import DeleteMovementButton from "./DeleteMovementButton";
 import { Button } from "../ui/button";
 
@@ -44,7 +44,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 
 import BaseTable from "../tables/BaseTable";
 
-const MovementsTableContent = ({ table }: any) => {
+const MovementsTableContent = ({ table, onDeleteMovement }: any) => {
   return (
     <>
       {table.getRowModel().rows?.length ? (
@@ -58,9 +58,8 @@ const MovementsTableContent = ({ table }: any) => {
               ))}
               <TableCell>
                 <DeleteMovementButton
-                  onDelete={() => {
-                    // Aquí puedes implementar la lógica para eliminar el movimiento
-                    console.log("Eliminar movimiento:", row.original);
+                  onAccepted={() => {
+                    onDeleteMovement(row.index);
                   }}
                 />
               </TableCell>
@@ -90,6 +89,11 @@ const MovementsTableContent = ({ table }: any) => {
 
 export default function MovementsMenu() {
   const [movements, setMovements] = useState<Movement[] | null>(null);
+  const deleteMovement = (i: number) => {
+    const updatedMovements = movements?.filter((_, index) => index !== i);
+    setMovements(updatedMovements? updatedMovements : movements);
+    fetchDeleteMovement(movements![i].id)
+  }
   useFetchMovements(setMovements);
 
   return (
@@ -102,7 +106,7 @@ export default function MovementsMenu() {
         <BaseTable data={movements} columns={columns}>
           {(table: any) => (
             // Tu contenido que usa table
-            <MovementsTableContent table={table} />
+            <MovementsTableContent table={table} onDeleteMovement={deleteMovement} />
           )}
         </BaseTable>
       )}

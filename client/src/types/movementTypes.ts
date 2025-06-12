@@ -10,6 +10,7 @@ export type Movement = {
   amount: number;
   date: string;
   description: string;
+  id:number
   origin?: string;
   destination?: string;
   tags?: string[];

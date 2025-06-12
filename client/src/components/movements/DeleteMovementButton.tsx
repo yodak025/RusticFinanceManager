@@ -11,7 +11,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const DeleteMovementButton = ({ onDelete }: { onDelete: () => void }) => {
+
+const DeleteMovementButton = ({ onAccepted }: { onAccepted: () => void }) => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -27,7 +28,7 @@ const DeleteMovementButton = ({ onDelete }: { onDelete: () => void }) => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Uff... Casi</AlertDialogCancel>
-          <AlertDialogAction className="bg-destructive" onClick={onDelete}>
+          <AlertDialogAction className="bg-destructive" onClick={onAccepted}>
               Borralo!
           </AlertDialogAction>
         </AlertDialogFooter>

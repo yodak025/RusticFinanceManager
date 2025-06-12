@@ -85,7 +85,7 @@ const fetchMovementById = async (id: number): Promise<Movement> => {
       throw new Error("Invalid movement: description must be a string");
     }
 
-    return movement as Movement;
+    return {...movement, id: id} as Movement;
   } catch (error) {
     console.error(`Error fetching movement ${id}:`, error);
     throw error;
@@ -103,3 +103,22 @@ export default function useFetchMovements(setMovements: React.Dispatch<React.Set
     .catch((error) => console.error("Error cargando movimientos:", error));
 }, []);
 }
+
+export async function fetchDeleteMovement(id: number) {
+  try {
+      const response = await fetch(`/movements/${id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        console.log('Movimiento eliminado exitosamente');
+
+      } else {
+        console.error(data.error || 'Error eliminando movimiento');
+      }
+    } catch (err) {
+      console.error('Error de conexión');
+    }
+  };
