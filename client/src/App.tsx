@@ -1,7 +1,7 @@
-import GeneralMenu from "./components/menus/GeneralMenu";
-import InvestmentsMenu from "./components/menus/InvestmentsMenu";
-import MovementsMenu from "./components/menus/MovementsMenu";
-import Login from "./components/menus/LoginMenu";
+import GeneralMenu from "./components/general/GeneralMenu";
+import InvestmentsMenu from "./components/investments/InvestmentsMenu";
+import MovementsMenu from "./components/movements/MovementsMenu";
+import Login from "./components/login/LoginMenu";
 import { useState } from "react";
 import { ThemeProvider } from "./hooks/ThemeContext";
 import { Nav } from "./components/nav/Nav";
