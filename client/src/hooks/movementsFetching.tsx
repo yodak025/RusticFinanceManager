@@ -122,3 +122,35 @@ export async function fetchDeleteMovement(id: number) {
       console.error('Error de conexión');
     }
   };
+
+export async function fetchCreateMovement(movement: Movement) {
+  try {
+    // Convert date from DD-MM-YYYY to YYYY-MM-DD if present
+    const { id, ...movementToSend } = movement;
+    if (movementToSend.date) {
+      const dateParts = movementToSend.date.split('-');
+      if (dateParts.length === 3) {
+      // Assuming input is in YYYY-MM-DD format from date input
+      movementToSend.date = movementToSend.date;
+      }
+    }
+
+    const response = await fetch('/movements', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ movement: movementToSend }),
+    });
+
+    const data = await response.json();
+    
+    if (response.ok) {
+      console.log(data.message || 'Movimiento creado exitosamente');
+    } else {
+      console.error(data.error || 'Error creando movimiento');
+    }
+  } catch (err) {
+    console.error('Error de conexión');
+  }
+}
