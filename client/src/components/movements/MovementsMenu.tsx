@@ -1,8 +1,10 @@
 import { type ColumnDef } from "@tanstack/react-table";
-import { useState} from "react";
+import { useState } from "react";
 import { CreateAndDeleteMov } from "../CreateAndDeleteMov";
-import { type Movement} from "@/types/movementTypes";
+import { type Movement } from "@/types/movementTypes";
 import useFetchMovements from "@/hooks/movementsFetching";
+import DeleteMovementButton from "./DeleteMovementButton";
+import { Button } from "../ui/button";
 
 const columns: ColumnDef<Movement>[] = [
   {
@@ -36,8 +38,6 @@ const columns: ColumnDef<Movement>[] = [
   },
 ];
 
-
-
 import { flexRender } from "@tanstack/react-table";
 
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -51,16 +51,19 @@ const MovementsTableContent = ({ table }: any) => {
         table.getRowModel().rows.map((row: any) => (
           <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
             <>
-            {row.getVisibleCells().map((cell: any) => (
-              <TableCell key={cell.id}>
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              {row.getVisibleCells().map((cell: any) => (
+                <TableCell key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
+              <TableCell>
+                <DeleteMovementButton
+                  onDelete={() => {
+                    // Aquí puedes implementar la lógica para eliminar el movimiento
+                    console.log("Eliminar movimiento:", row.original);
+                  }}
+                />
               </TableCell>
-            ))}
-            <TableCell>
-              <button>
-                🗑️
-              </button>
-            </TableCell>
             </>
           </TableRow>
         ))
@@ -73,11 +76,12 @@ const MovementsTableContent = ({ table }: any) => {
       )}
       <TableRow>
         <TableCell colSpan={columns.length} className="text-center p-4">
-          <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 
+          <Button
+            className=" text-white font-bold py-2 px-4 
            text-3xl rounded-full shadow-lg transition-colors duration-200 hover:shadow-xl"
-           >
+          >
             +
-          </button>
+          </Button>
         </TableCell>
       </TableRow>
     </>
@@ -90,7 +94,7 @@ export default function MovementsMenu() {
 
   return (
     <div className="p-4">
-      { !movements ? (
+      {!movements ? (
         <div className="flex justify-center items-center h-24">
           <p>Cargando movimientos...</p>
         </div>
