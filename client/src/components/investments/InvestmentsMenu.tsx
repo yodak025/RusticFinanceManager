@@ -81,22 +81,6 @@ const columns: ColumnDef<Investment>[] = [
   {
     accessorKey: "totalValue",
     header: "Valor Total",
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <Collapsible className="transition-all duration-300 ease-in-out">
-        <CollapsibleTrigger className="text-blue-500 hover:underline">
-          Ver Detalles
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <TableRow>
-            hi 
-
-              </TableRow>
-        </CollapsibleContent>
-      </Collapsible>
-    ),
   }
 ];
 
@@ -117,7 +101,7 @@ const InvestmentsTableContent = ({ table }: any) => {
     <>
       {table.getRowModel().rows?.length ? (
         table.getRowModel().rows.map((row: any) => (
-
+          <>
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
@@ -130,6 +114,28 @@ const InvestmentsTableContent = ({ table }: any) => {
                 ))}
 
               </TableRow>
+              <Collapsible>
+        <CollapsibleTrigger className="w-full text-left">
+          Ver Detalles
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          {table.getRowModel().rows.map((row: any) => (
+            <div key={row.id} className="p-4">
+              <h3 className="font-bold">Detalles de {row.original.entityName}</h3>
+              {row.original.entries.map((entry: Entry, index: number) => (
+                <div key={index} className="mb-2">
+                  <p>Fecha: {entry.date}</p>
+                  <p>Monto Local: {entry.localAmount}</p>
+                  <p>Rentabilidad Local: {entry.localRentability}</p>
+                  <p>Ganancia Local: {entry.localProfit}</p>
+                  <p>Valor Parcial: {entry.partialValue}</p>
+                </div>
+              ))}
+            </div>
+          ))}
+        </CollapsibleContent>
+      </Collapsible>
+          </>
         ))
       ) : (
         <TableRow>
@@ -137,7 +143,9 @@ const InvestmentsTableContent = ({ table }: any) => {
             No results.
           </TableCell>
         </TableRow>
+        
       )}
+      
     </>
   );
 };
