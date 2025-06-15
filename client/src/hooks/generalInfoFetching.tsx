@@ -52,5 +52,5 @@ export default function useFetchGeneralInfo(
       .catch((error) => {
         console.error("Error al obtener información general:", error);
       });
-  }, []);
+  }, [onSessionExpired]);
 }

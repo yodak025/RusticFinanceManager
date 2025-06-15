@@ -13,14 +13,11 @@ function App() {
   return (
     <ThemeProvider>
       <main className="">
-        {!isLoggedIn ? (<Login isLoggedIn={setIsLoggedIn} />) : (
-          <>
-            <Nav setMenu={setMenu} />
-            {menu === "general" && <GeneralMenu expireSession={logOut} />}
-            {menu === "investments" && <InvestmentsMenu />}
-            {menu === "movements" && <MovementsMenu expireSession={logOut} />}
-          </>
-        )}
+        {!isLoggedIn && <Login isLoggedIn={setIsLoggedIn} />}
+        <Nav setMenu={setMenu} />
+        {menu === "general" && <GeneralMenu expireSession={logOut}/>}
+        {menu === "investments" && <InvestmentsMenu />}
+        {menu === "movements" && <MovementsMenu expireSession={logOut} />}
       </main>
     </ThemeProvider>
   );

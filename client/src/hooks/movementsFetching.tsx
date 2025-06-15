@@ -115,7 +115,7 @@ export default function useFetchMovements(
         console.log("Movements fetched:", fetchedMovements);
       })
       .catch((error) => console.error("Error cargando movimientos:", error));
-  }, []);
+  }, [onSessionExpired]);
 }
 
 export async function fetchDeleteMovement(
@@ -128,6 +128,10 @@ export async function fetchDeleteMovement(
     });
 
     const data = await response.json();
+    if (response.status === 401) {
+      onSessionExpired();
+      throw new Error("Session expired, please log in again.");
+    }
 
     if (response.ok) {
       console.log("Movimiento eliminado exitosamente");
@@ -163,6 +167,11 @@ export async function fetchCreateMovement(
     });
 
     const data = await response.json();
+
+    if (response.status === 401) {
+      onSessionExpired();
+      throw new Error("Session expired, please log in again.");
+    }
 
     if (response.ok) {
       console.log(data.message || "Movimiento creado exitosamente");

@@ -243,7 +243,7 @@ export default function MovementsMenu({expireSession} : { expireSession: () => v
   const deleteMovement = (i: number) => {
     const updatedMovements = movements?.filter((_, index) => index !== i);
     setMovements(updatedMovements ? updatedMovements : movements);
-    fetchDeleteMovement(movements![i].id, expireSession);
+    (movements![i].id, expireSession);
   };
   const addMovement = (movement: Movement) => {
     setMovements(movements ? [...movements, movement] : [movement]);

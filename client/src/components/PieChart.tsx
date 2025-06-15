@@ -18,58 +18,64 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-
+const colors = [
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
+]
 const desktopData = [
-  { month: "january", desktop: 186, fill: "var(--chart-1)" },
-  { month: "february", desktop: 305, fill: "var(--chart-2)" },
-  { month: "march", desktop: 237, fill: "var(--chart-3)" },
-  { month: "april", desktop: 173, fill: "var(--chart-4)" },
-  { month: "may", desktop: 209, fill: "var(--chart-5))" },
+  { account: "CaixaBank", income: 2500, outcome: 1800, balance: 700, fill: "var(--chart-1)" },
+  { account: "Cash", income: 500, outcome: 300, balance: 200, fill: "var(--chart-2)" },
+  { account: "TradeRepublic", income: 1200, outcome: 800, balance: 400 , fill: "var(--chart-3)" },
+  { account: "ImaginBank", income: 1800, outcome: 1200, balance: 600 , fill: "var(--chart-4)" },
+  { account: "SantanderBank", income: 2200, outcome: 1500, balance: 700 , fill: "var(--chart-5)" },
 ]
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
+  balance: {
+    label: "Balance",
   },
-  desktop: {
-    label: "Desktop",
+  income: {
+    label: "Income",
   },
-  mobile: {
-    label: "Mobile",
+  outcome: {
+    label: "Outcome",
   },
-  january: {
-    label: "January",
-    color: "var(--chart-1)",
+  CaixaBank: {
+    label: "CaixaBank",
+    color: colors[0],
   },
-  february: {
-    label: "February",
+  Cash: {
+    label: "Cash",
     color: "var(--chart-2)",
   },
-  march: {
-    label: "March",
+  TradeRepublic: {
+    label: "TradeRepublic",
     color: "var(--chart-3)",
   },
-  april: {
-    label: "April",
+  ImaginBank: {
+    label: "ImaginBank",
     color: "var(--chart-4)",
   },
-  may: {
-    label: "May",
+  SantanderBank: {
+    label: "SantanderBank",
     color: "var(--chart-5)",
   },
 } satisfies ChartConfig
 
 export function Component() {
   const id = "pie-interactive"
-  const [activeMonth, setActiveMonth] = React.useState(desktopData[0].month)
+  const [activeAccount, setActiveAccount] = React.useState(desktopData[0].account)
 
   const activeIndex = React.useMemo(
-    () => desktopData.findIndex((item) => item.month === activeMonth),
-    [activeMonth]
+    () => desktopData.findIndex((item) => item.account === activeAccount),
+    [activeAccount]
   )
 
   const handlePieClick = (data: any, index: number) => {
-    setActiveMonth(desktopData[index].month)
+    setActiveAccount(desktopData[index].account)
   }
 
   return (
@@ -77,8 +83,8 @@ export function Component() {
       <ChartStyle id={id} config={chartConfig} />
       <CardHeader className="flex-row items-start space-y-0 pb-0">
         <div className="grid gap-1">
-          <CardTitle>Pie Chart - Interactive</CardTitle>
-          <CardDescription>January - June 2024</CardDescription>
+          <CardTitle>Account Balance Distribution</CardTitle>
+          <CardDescription>Current account balances</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="flex flex-1 justify-center pb-0">
@@ -94,8 +100,8 @@ export function Component() {
             />
             <Pie
               data={desktopData}
-              dataKey="desktop"
-              nameKey="month"
+              dataKey="balance"
+              nameKey="account"
               innerRadius={60}
               strokeWidth={5}
               activeIndex={activeIndex}
@@ -129,14 +135,14 @@ export function Component() {
                           y={viewBox.cy}
                           className="fill-foreground text-3xl font-bold"
                         >
-                          {desktopData[activeIndex].desktop.toLocaleString()}
+                          ${desktopData[activeIndex].balance.toLocaleString()}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 24}
                           className="fill-muted-foreground"
                         >
-                          Visitors
+                          Balance
                         </tspan>
                       </text>
                     )
