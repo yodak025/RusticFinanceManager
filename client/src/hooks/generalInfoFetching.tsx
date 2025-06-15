@@ -11,9 +11,13 @@ const isValidGeneralInfo = (data: any): data is GeneralInfo => {
   );
 };
 
-const fetchGeneralInfo = async (): Promise<GeneralInfo> => {
+const fetchGeneralInfo = async (onSessionExpired: ()=> void): Promise<GeneralInfo> => {
   try {
     const response = await fetch("/auth/me");
+
+    if (response.status === 401) {
+      onSessionExpired();
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -36,10 +40,11 @@ const fetchGeneralInfo = async (): Promise<GeneralInfo> => {
 };
 
 export default function useFetchGeneralInfo(
-  setGeneralInfo: React.Dispatch<React.SetStateAction<GeneralInfo | null>>
+  setGeneralInfo: React.Dispatch<React.SetStateAction<GeneralInfo | null>>,
+  onSessionExpired: () => void
 ) {
   useEffect(() => {
-    fetchGeneralInfo()
+    fetchGeneralInfo(onSessionExpired)
       .then((data) => {
         console.log("Información general obtenida:", data);
         setGeneralInfo(data);

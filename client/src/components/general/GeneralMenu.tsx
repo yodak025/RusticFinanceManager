@@ -8,9 +8,9 @@ import useFetchGeneralInfo from "@/hooks/generalInfoFetching";
 
 
 
-export default function GeneralMenu() {
+export default function GeneralMenu({expireSession}: { expireSession: () => void }) {
   const [generalInfo, setGeneralInfo] = useState<GeneralInfo | null>(null);
-  useFetchGeneralInfo(setGeneralInfo);
+  useFetchGeneralInfo(setGeneralInfo, expireSession);
 
   return (
     <article className="grid grid-cols-2 md:grid-cols-4 grid-rows-3 gap-10 m-5">

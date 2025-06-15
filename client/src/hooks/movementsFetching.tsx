@@ -1,4 +1,4 @@
-import {type  Movement, MovementType } from "@/types/movementTypes";
+import { type Movement, MovementType } from "@/types/movementTypes";
 import { useEffect } from "react";
 
 const fetchMovementsIds = async (): Promise<number[]> => {
@@ -34,10 +34,16 @@ const fetchMovementsIds = async (): Promise<number[]> => {
   }
 };
 
-const fetchMovementById = async (id: number): Promise<Movement> => {
+const fetchMovementById = async (
+  id: number,
+  onSessionExpired: () => void
+): Promise<Movement> => {
   try {
     const response = await fetch(`/movements/${id}`);
-
+    if (response.status === 401) {
+      onSessionExpired();
+      throw new Error("Session expired, please log in again.");
+    }
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -64,15 +70,20 @@ const fetchMovementById = async (id: number): Promise<Movement> => {
       throw new Error("Invalid movement: invalid or missing type");
     }
 
-    if (typeof movement.amount !== "number" && typeof movement.amount !== "string") {
+    if (
+      typeof movement.amount !== "number" &&
+      typeof movement.amount !== "string"
+    ) {
       throw new Error("Invalid movement: amount must be a number or string");
     }
-    
+
     // Convert string to number if needed
     if (typeof movement.amount === "string") {
       const numericAmount = parseFloat(movement.amount);
       if (isNaN(numericAmount)) {
-      throw new Error("Invalid movement: amount string is not a valid number");
+        throw new Error(
+          "Invalid movement: amount string is not a valid number"
+        );
       }
       movement.amount = numericAmount;
     }
@@ -85,72 +96,80 @@ const fetchMovementById = async (id: number): Promise<Movement> => {
       throw new Error("Invalid movement: description must be a string");
     }
 
-    return {...movement, id: id} as Movement;
+    return { ...movement, id: id } as Movement;
   } catch (error) {
     console.error(`Error fetching movement ${id}:`, error);
     throw error;
   }
 };
 
-export default function useFetchMovements(setMovements: React.Dispatch<React.SetStateAction<Movement[] | null>>) {
+export default function useFetchMovements(
+  setMovements: React.Dispatch<React.SetStateAction<Movement[] | null>>,
+  onSessionExpired: () => void
+) {
   useEffect(() => {
-  fetchMovementsIds()
-    .then((ids) => Promise.all(ids.map((id) => fetchMovementById(id))))
-    .then((fetchedMovements) => {
-      setMovements(fetchedMovements);
-      console.log("Movements fetched:", fetchedMovements);
-    })
-    .catch((error) => console.error("Error cargando movimientos:", error));
-}, []);
+    fetchMovementsIds()
+      .then((ids) => Promise.all(ids.map((id) => fetchMovementById(id, onSessionExpired))))
+      .then((fetchedMovements) => {
+        setMovements(fetchedMovements);
+        console.log("Movements fetched:", fetchedMovements);
+      })
+      .catch((error) => console.error("Error cargando movimientos:", error));
+  }, []);
 }
 
-export async function fetchDeleteMovement(id: number) {
+export async function fetchDeleteMovement(
+  id: number,
+  onSessionExpired: () => void
+) {
   try {
-      const response = await fetch(`/movements/${id}`, {
-        method: 'DELETE',
-      });
+    const response = await fetch(`/movements/${id}`, {
+      method: "DELETE",
+    });
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        console.log('Movimiento eliminado exitosamente');
+    const data = await response.json();
 
-      } else {
-        console.error(data.error || 'Error eliminando movimiento');
-      }
-    } catch (err) {
-      console.error('Error de conexión');
+    if (response.ok) {
+      console.log("Movimiento eliminado exitosamente");
+    } else {
+      console.error(data.error || "Error eliminando movimiento");
     }
-  };
+  } catch (err) {
+    console.error("Error de conexión");
+  }
+}
 
-export async function fetchCreateMovement(movement: Movement) {
+export async function fetchCreateMovement(
+  movement: Movement,
+  onSessionExpired: () => void
+) {
   try {
     // Convert date from DD-MM-YYYY to YYYY-MM-DD if present
     const { id, ...movementToSend } = movement;
     if (movementToSend.date) {
-      const dateParts = movementToSend.date.split('-');
+      const dateParts = movementToSend.date.split("-");
       if (dateParts.length === 3) {
-      // Assuming input is in YYYY-MM-DD format from date input
-      movementToSend.date = movementToSend.date;
+        // Assuming input is in YYYY-MM-DD format from date input
+        movementToSend.date = movementToSend.date;
       }
     }
 
-    const response = await fetch('/movements', {
-      method: 'POST',
+    const response = await fetch("/movements", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ movement: movementToSend }),
     });
 
     const data = await response.json();
-    
+
     if (response.ok) {
-      console.log(data.message || 'Movimiento creado exitosamente');
+      console.log(data.message || "Movimiento creado exitosamente");
     } else {
-      console.error(data.error || 'Error creando movimiento');
+      console.error(data.error || "Error creando movimiento");
     }
   } catch (err) {
-    console.error('Error de conexión');
+    console.error("Error de conexión");
   }
 }

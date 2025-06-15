@@ -8,16 +8,17 @@ import { Nav } from "./components/nav/Nav";
 
 function App() {
   const [menu, setMenu] = useState("general");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const logOut = () => setIsLoggedIn(false);
   return (
     <ThemeProvider>
       <main className="">
         {!isLoggedIn ? (<Login isLoggedIn={setIsLoggedIn} />) : (
           <>
             <Nav setMenu={setMenu} />
-            {menu === "general" && <GeneralMenu />}
+            {menu === "general" && <GeneralMenu expireSession={logOut} />}
             {menu === "investments" && <InvestmentsMenu />}
-            {menu === "movements" && <MovementsMenu />}
+            {menu === "movements" && <MovementsMenu expireSession={logOut} />}
           </>
         )}
       </main>

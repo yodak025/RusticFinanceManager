@@ -46,7 +46,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 
 import BaseTable from "../tables/BaseTable";
 
-const NewMovementButton = ({onCreateMovement}:any) => {
+const NewMovementButton = ({onCreateMovement, onExpiredSession}:any) => {
   const [isCreating, setIsCreating] = useState(false);
   const [movement, setMovement] = useState<Movement>(
     {
@@ -69,7 +69,7 @@ const NewMovementButton = ({onCreateMovement}:any) => {
 
   const createMovement = async () => {
     try {
-      await fetchCreateMovement(movement!);
+      await fetchCreateMovement(movement!, onExpiredSession);
       setMessage('Movimiento creado exitosamente');
       setError('');
       setMovement({
@@ -204,7 +204,7 @@ const NewMovementButton = ({onCreateMovement}:any) => {
   );
 };
 
-const MovementsTableContent = ({ table, onDeleteMovement, onAddMovement}: any) => {
+const MovementsTableContent = ({ table, onDeleteMovement, onAddMovement, expireSession}: any) => {
   return (
     <>
       {table.getRowModel().rows?.length ? (
@@ -233,22 +233,22 @@ const MovementsTableContent = ({ table, onDeleteMovement, onAddMovement}: any) =
           </TableCell>
         </TableRow>
       )}
-      <NewMovementButton onCreateMovement={onAddMovement}/>
+      <NewMovementButton onCreateMovement={onAddMovement} onExpiredSesion={expireSession}/>
     </>
   );
 };
 
-export default function MovementsMenu() {
+export default function MovementsMenu({expireSession} : { expireSession: () => void }) {
   const [movements, setMovements] = useState<Movement[] | null>(null);
   const deleteMovement = (i: number) => {
     const updatedMovements = movements?.filter((_, index) => index !== i);
     setMovements(updatedMovements ? updatedMovements : movements);
-    fetchDeleteMovement(movements![i].id);
+    fetchDeleteMovement(movements![i].id, expireSession);
   };
   const addMovement = (movement: Movement) => {
     setMovements(movements ? [...movements, movement] : [movement]);
   }
-  useFetchMovements(setMovements);
+  useFetchMovements(setMovements, expireSession);
 
   return (
     <div className="p-4">
@@ -264,6 +264,7 @@ export default function MovementsMenu() {
               table={table}
               onDeleteMovement={deleteMovement}
               onAddMovement={addMovement}
+
             />
           )}
         </BaseTable>
