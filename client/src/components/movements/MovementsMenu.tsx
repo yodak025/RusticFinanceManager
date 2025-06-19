@@ -46,7 +46,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 
 import BaseTable from "../tables/BaseTable";
 
-const NewMovementButton = ({onCreateMovement, onExpiredSession}:any) => {
+const NewMovementButton = ({onCreateMovement, onExpiredSession}:{onCreateMovement: (movement: Movement)=> void , onExpiredSession: () => void}) => {
   const [isCreating, setIsCreating] = useState(false);
   const [movement, setMovement] = useState<Movement>(
     {
@@ -233,7 +233,7 @@ const MovementsTableContent = ({ table, onDeleteMovement, onAddMovement, expireS
           </TableCell>
         </TableRow>
       )}
-      <NewMovementButton onCreateMovement={onAddMovement} onExpiredSesion={expireSession}/>
+      <NewMovementButton onCreateMovement={onAddMovement} onExpiredSession={expireSession}/>
     </>
   );
 };
@@ -243,7 +243,7 @@ export default function MovementsMenu({expireSession} : { expireSession: () => v
   const deleteMovement = (i: number) => {
     const updatedMovements = movements?.filter((_, index) => index !== i);
     setMovements(updatedMovements ? updatedMovements : movements);
-    (movements![i].id, expireSession);
+    fetchDeleteMovement(movements![i].id, expireSession);
   };
   const addMovement = (movement: Movement) => {
     setMovements(movements ? [...movements, movement] : [movement]);
@@ -264,7 +264,7 @@ export default function MovementsMenu({expireSession} : { expireSession: () => v
               table={table}
               onDeleteMovement={deleteMovement}
               onAddMovement={addMovement}
-
+              expireSession={expireSession}
             />
           )}
         </BaseTable>

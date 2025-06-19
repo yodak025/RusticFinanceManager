@@ -47,6 +47,7 @@ def movement_detail(movement_id):
     except Exception as e:
         return jsonify({'error': f'Error fetching movement: {str(e)}'}), 500
 
+
 @movements_bp.post('')
 def create_movement():
     username = request.cookies.get('username')
