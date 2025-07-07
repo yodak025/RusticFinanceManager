@@ -1,0 +1,43 @@
+{
+  "name": "Rustic Finance Manager",
+  "short_name": "RusticFM",
+  "description": "Aplicación web para manejar las finanzas personales de forma simple, cómoda y visual",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "productivity", "business"],
+  "lang": "es",
+  "scope": "/",
+  "shortcuts": [
+    {
+      "name": "Movimientos",
+      "short_name": "Movimientos",
+      "description": "Gestionar movimientos financieros",
+      "url": "/?menu=movements",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "General",
+      "short_name": "General",
+      "description": "Vista general de finanzas",
+      "url": "/?menu=general",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

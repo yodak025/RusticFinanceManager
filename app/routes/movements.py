@@ -6,6 +6,7 @@ movements_bp = Blueprint('movements', __name__)
 # Valid movement types based on MovementsMenu.tsx
 VALID_MOVEMENT_TYPES = ["Ingreso", "Gasto", "Transferencia", "Inversión"]
 
+
 @movements_bp.get('')
 def list_movements():
     username = request.cookies.get('username')
@@ -23,6 +24,7 @@ def list_movements():
         return jsonify({"movements": list(range(len(movements)))})
     except Exception as e:
         return jsonify({'error': f'Error fetching movements: {str(e)}'}), 500
+
 
 @movements_bp.get('/<int:movement_id>')
 def movement_detail(movement_id):
@@ -116,6 +118,7 @@ def create_movement():
         return jsonify({'message': 'Movement created successfully'}), 201
     except Exception as e:
         return jsonify({'error': f'Error creating movement: {str(e)}'}), 500
+
 
 @movements_bp.delete('/<int:movement_id>')
 def delete_movement(movement_id):

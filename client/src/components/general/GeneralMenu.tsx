@@ -1,6 +1,6 @@
 import { Card, CardContent } from "../ui/card";
 import { Component } from "../PieChart";
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { type GeneralInfo } from "@/types/generalInfoTypes";
 import useFetchGeneralInfo from "@/hooks/generalInfoFetching";
 
