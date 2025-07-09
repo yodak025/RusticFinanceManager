@@ -16,7 +16,7 @@ Este módulo contiene todos los componentes relacionados con la gestión de movi
 
 ### Componentes de Utilidad
 
-- **`AlertNotification.tsx`** - Sistema de notificaciones para mostrar mensajes de éxito y error.
+- **`AlertNotification.tsx`** - Sistema de notificaciones centralizado para mostrar mensajes de éxito y error desde el componente principal.
 
 - **`LoadingState.tsx`** - Indicador de carga que se muestra mientras se obtienen los datos del servidor.
 
@@ -37,10 +37,12 @@ Este módulo contiene todos los componentes relacionados con la gestión de movi
 - Carga asíncrona de datos con indicadores visuales
 
 ### Experiencia de Usuario
-- Notificaciones en tiempo real para acciones completadas
+- Notificaciones centralizadas en tiempo real para acciones completadas
+- Sistema de prevención de notificaciones duplicadas
 - Interfaz responsiva y accesible
 - Validación de formularios
 - Estados de carga claros
+- Manejo mejorado de errores a nivel global
 
 ### Integraciones
 - Conexión con el backend Flask a través de hooks personalizados
@@ -68,6 +70,16 @@ import { NewMovementForm, AlertNotification } from '@/components/movements';
 
 El módulo sigue principios de:
 - **Separación de responsabilidades**: Cada componente tiene una función específica
+- **Centralización de estado**: Las notificaciones se manejan desde el componente principal
 - **Reutilización**: Componentes pequeños y enfocados que pueden reutilizarse
+- **Prevención de duplicados**: Sistema que evita mostrar múltiples notificaciones simultáneas
 - **Mantenibilidad**: Código bien documentado y estructurado
 - **Escalabilidad**: Arquitectura que facilita agregar nuevas funcionalidades
+
+### Flujo de Notificaciones
+
+1. **MovementsMenu.tsx** mantiene el estado centralizado de las notificaciones
+2. Las funciones `showSuccessMessage` y `showErrorMessage` manejan la prevención de duplicados
+3. Los componentes hijos reciben solo las funciones necesarias para mostrar errores
+4. `AlertNotification.tsx` se renderiza una sola vez fuera de la tabla
+5. Auto-limpieza de mensajes después de 3 segundos y limpieza manual disponible

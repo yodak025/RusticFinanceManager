@@ -1,9 +1,9 @@
 """
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                           RUTAS DE MOVIMIENTOS                              ║
+║                           RUTAS DE MOVIMIENTOS                               ║
 ║                                                                              ║
-║  Este módulo gestiona todas las operaciones relacionadas con los            ║
-║  movimientos financieros: ingresos, gastos, transferencias e inversiones.   ║
+║  Este módulo gestiona todas las operaciones relacionadas con los             ║
+║  movimientos financieros: ingresos, gastos, transferencias e inversiones.    ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
 

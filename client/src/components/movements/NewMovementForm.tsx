@@ -3,10 +3,10 @@ import { type Movement, MovementType } from "@/types/movementTypes";
 import { fetchCreateMovement } from "@/hooks/movementsFetching";
 import { Button } from "../ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import AlertNotification from './AlertNotification';
 
 interface NewMovementFormProps {
   onCreateMovement: (movement: Movement) => void;
+  onShowError: (message: string) => void;
   onExpiredSession: () => void;
 }
 
@@ -16,12 +16,13 @@ interface NewMovementFormProps {
  */
 const NewMovementForm: React.FC<NewMovementFormProps> = ({
   onCreateMovement,
+  onShowError,
   onExpiredSession
 }) => {
   // Estado para controlar si el formulario está en modo de creación
   const [isCreating, setIsCreating] = useState(false);
   
-  // Estado para almacenar los datos del movimiento que se está creando
+  // Estados para almacenar los datos del movimiento que se está creando
   const [movement, setMovement] = useState<Movement>({
     amount: 0,
     origin: '',
@@ -32,10 +33,6 @@ const NewMovementForm: React.FC<NewMovementFormProps> = ({
     tags: [],
     id: -1
   });
-  
-  // Estados para manejar mensajes de notificación al usuario
-  const [message, setMessage] = useState<string>('');
-  const [error, setError] = useState<string>('');
 
   /**
    * Maneja los cambios en los campos del formulario
@@ -70,13 +67,10 @@ const NewMovementForm: React.FC<NewMovementFormProps> = ({
   const createMovement = async () => {
     try {
       await fetchCreateMovement(movement, onExpiredSession);
-      setMessage('Movimiento creado exitosamente');
-      setError('');
       onCreateMovement(movement);
       resetForm();
     } catch (err) {
-      setError('Error creando movimiento');
-      setMessage('');
+      onShowError('Error creando movimiento');
     }
   };
 
@@ -90,19 +84,10 @@ const NewMovementForm: React.FC<NewMovementFormProps> = ({
   };
 
   return (
-    <>
-      {/* Componente de notificaciones para mostrar mensajes al usuario */}
-      <AlertNotification
-        message={message}
-        error={error}
-        onClearMessage={() => setMessage('')}
-        onClearError={() => setError('')}
-      />
-      
-      <TableRow>
-        {isCreating ? (
-          // Modo de creación: mostrar formulario completo
-          <>
+    <TableRow>
+      {isCreating ? (
+        // Modo de creación: mostrar formulario completo
+        <>
             {/* Campo de fecha */}
             <TableCell>
               <input
@@ -206,8 +191,7 @@ const NewMovementForm: React.FC<NewMovementFormProps> = ({
           </TableCell>
         )}
       </TableRow>
-    </>
-  );
-};
+    );
+  };
 
-export default NewMovementForm;
+  export default NewMovementForm;

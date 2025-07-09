@@ -21,7 +21,7 @@ const AlertNotification: React.FC<AlertNotificationProps> = ({
     <>
       {/* Notificación de éxito - aparece cuando una operación se completa correctamente */}
       {message && (
-        <td className="fixed top-4 right-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md shadow-lg z-50">
+        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md shadow-lg z-50">
           {message}
           <button 
             onClick={onClearMessage} 
@@ -29,12 +29,12 @@ const AlertNotification: React.FC<AlertNotificationProps> = ({
           >
             ×
           </button>
-        </td>
+        </div>
       )}
       
       {/* Notificación de error - aparece cuando hay algún problema en la operación */}
       {error && (
-        <td className="fixed top-4 right-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md shadow-lg z-50">
+        <div className="fixed top-4 right-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md shadow-lg z-50">
           {error}
           <button 
             onClick={onClearError} 
@@ -42,7 +42,7 @@ const AlertNotification: React.FC<AlertNotificationProps> = ({
           >
             ×
           </button>
-        </td>
+        </div>
       )}
     </>
   );

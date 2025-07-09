@@ -8,6 +8,7 @@ interface MovementsTableContentProps {
   table: any; // Tipo de react-table
   onDeleteMovement: (index: number) => void;
   onAddMovement: (movement: Movement) => void;
+  onShowError: (message: string) => void;
   expireSession: () => void;
 }
 
@@ -19,6 +20,7 @@ const MovementsTableContent: React.FC<MovementsTableContentProps> = ({
   table,
   onDeleteMovement,
   onAddMovement,
+  onShowError,
   expireSession
 }) => {
   // Obtener el número total de columnas para el colspan en caso de tabla vacía
@@ -47,6 +49,7 @@ const MovementsTableContent: React.FC<MovementsTableContentProps> = ({
       {/* Formulario para crear nuevos movimientos */}
       <NewMovementForm
         onCreateMovement={onAddMovement}
+        onShowError={onShowError}
         onExpiredSession={expireSession}
       />
     </>
