@@ -10,6 +10,10 @@ interface MovementsTableContentProps {
   onAddMovement: (movement: Movement) => void;
   onShowError: (message: string) => void;
   expireSession: () => void;
+  newAccount: {
+    isNewAccount: boolean;
+    setIsNewAccount: (value: boolean) => void;
+  };
 }
 
 /**
@@ -21,7 +25,9 @@ const MovementsTableContent: React.FC<MovementsTableContentProps> = ({
   onDeleteMovement,
   onAddMovement,
   onShowError,
-  expireSession
+  expireSession,
+  newAccount
+
 }) => {
   // Obtener el número total de columnas para el colspan en caso de tabla vacía
   const totalColumns = table.getAllColumns().length + 1; // +1 por la columna de acciones
@@ -51,6 +57,7 @@ const MovementsTableContent: React.FC<MovementsTableContentProps> = ({
         onCreateMovement={onAddMovement}
         onShowError={onShowError}
         onExpiredSession={expireSession}
+        newAccount={newAccount}
       />
     </>
   );

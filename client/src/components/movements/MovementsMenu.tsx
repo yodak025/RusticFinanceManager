@@ -5,6 +5,8 @@ import BaseTable from "../tables/BaseTable";
 import MovementsTableContent from "./MovementsTableContent";
 import LoadingState from "./LoadingState";
 import AlertNotification from "./AlertNotification";
+import NewAccountModal from "./NewAccountModal";
+import { Button } from "../ui/button";
 import { movementColumns } from "./movementColumns";
 
 interface MovementsMenuProps {
@@ -22,6 +24,12 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
   // Estados centralizados para manejo de notificaciones
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
+
+  // Estado para controlar la visibilidad del modal de nueva cuenta
+  const [isNewAccountModalOpen, setIsNewAccountModalOpen] = useState(false);
+
+  // Estado para controlar si se ha creado una nueva cuenta
+  const [isNewAccount, setIsNewAccount] = useState(false);
 
   /**
    * Muestra un mensaje de éxito, evitando duplicados
@@ -105,6 +113,17 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
     showSuccessMessage("Movimiento creado exitosamente");
   };
 
+  /**
+   * Maneja la creación exitosa de una nueva cuenta
+   * Cierra el modal y muestra mensaje de éxito
+   */
+  const handleAccountCreated = () => {
+    setIsNewAccountModalOpen(false);
+    showSuccessMessage("Cuenta creada exitosamente");
+    setIsNewAccount(true); // Actualiza el estado para indicar que se ha creado una
+    // Las cuentas se recargarán automáticamente en los selects del formulario
+  };
+
   // Hook personalizado para obtener los movimientos del servidor al montar el componente
   useFetchMovements(setMovements, expireSession);
 
@@ -118,7 +137,18 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
         onClearError={clearErrorMessage}
       />
       
-      <h2 className="text-2xl font-bold mb-4 text-center">Gestión de Movimientos</h2>
+      {/* Encabezado con título y botón de nueva cuenta */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-center flex-1">Gestión de Movimientos</h2>
+        <Button
+          onClick={() => setIsNewAccountModalOpen(true)}
+          variant="outline"
+          size="sm"
+          className="ml-4 text-sm"
+        >
+          + Nueva Cuenta
+        </Button>
+      </div>
       
       {/* Mostrar estado de carga mientras se obtienen los datos */}
       {!movements ? (
@@ -134,10 +164,21 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
               onAddMovement={addMovement}
               onShowError={showErrorMessage}
               expireSession={expireSession}
+              newAccount={{isNewAccount, setIsNewAccount}}
             />
           )}
         </BaseTable>
       )}
+
+      {/* Modal para crear nueva cuenta */}
+      <NewAccountModal
+        isOpen={isNewAccountModalOpen}
+        onClose={() => setIsNewAccountModalOpen(false)}
+        onAccountCreated={handleAccountCreated}
+        onShowError={showErrorMessage}
+        onShowSuccess={showSuccessMessage}
+        onExpiredSession={expireSession}
+      />
     </div>
   );
 }
