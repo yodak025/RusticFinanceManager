@@ -2,12 +2,11 @@ import React from 'react';
 import { TableCell, TableRow } from "@/components/ui/table";
 import MovementRow from './MovementRow';
 import NewMovementForm from './NewMovementForm';
-import { type Movement } from "@/types/movementTypes";
 
 interface MovementsTableContentProps {
   table: any; // Tipo de react-table
   onDeleteMovement: (index: number) => void;
-  onAddMovement: (movement: Movement) => void;
+  onAddMovement: () => void;
   onShowError: (message: string) => void;
   expireSession: () => void;
   newAccount: {

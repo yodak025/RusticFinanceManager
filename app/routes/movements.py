@@ -181,6 +181,25 @@ def create_movement():
         return jsonify({'error': 'Movement must have at least origin or destination'}), 400
     
     # ──────────────────────────────────────────────────────────────────────────
+    # VALIDACIONES ESPECÍFICAS POR TIPO DE MOVIMIENTO
+    # ──────────────────────────────────────────────────────────────────────────
+    
+    movement_type = movement_data.get('type', '')
+    
+    # Validar campos requeridos según el tipo de movimiento
+    if movement_type == 'Ingreso':
+        if 'destination' not in movement_data or not movement_data['destination']:
+            return jsonify({'error': 'Los ingresos requieren una cuenta destino'}), 400
+    elif movement_type == 'Gasto':
+        if 'origin' not in movement_data or not movement_data['origin']:
+            return jsonify({'error': 'Los gastos requieren una cuenta origen'}), 400
+    elif movement_type in ['Transferencia', 'Inversión']:
+        if 'origin' not in movement_data or not movement_data['origin']:
+            return jsonify({'error': f'{movement_type}s requieren una cuenta origen'}), 400
+        if 'destination' not in movement_data or not movement_data['destination']:
+            return jsonify({'error': f'{movement_type}s requieren una cuenta destino'}), 400
+    
+    # ──────────────────────────────────────────────────────────────────────────
     # VALIDACIÓN DE CAMPOS OPCIONALES
     # ──────────────────────────────────────────────────────────────────────────
     
@@ -216,26 +235,41 @@ def create_movement():
     # ──────────────────────────────────────────────────────────────────────────
     
     try:
+        # Actualizar saldos de cuentas según el tipo de movimiento
+        current_app.config['DATABASE'].update_account_balances(user, movement_data)
+        
         # Registrar el movimiento en la base de datos
         current_app.config['DATABASE'].register_movement(user, movement_data)
         return jsonify({'message': 'Movement created successfully'}), 201
+        
+    except ValueError as ve:
+        # Errores de validación de negocio (ej: saldo insuficiente, cuenta no encontrada)
+        return jsonify({'error': str(ve)}), 400
     except Exception as e:
+        # Otros errores del sistema
         return jsonify({'error': f'Error creating movement: {str(e)}'}), 500
 
 
 @movements_bp.delete('/<int:movement_id>')
 def delete_movement(movement_id):
     """
-    Eliminar un movimiento específico
+    Eliminar un movimiento específico y revertir su impacto en los saldos
     
     Elimina permanentemente un movimiento identificado por su índice
-    en la lista de movimientos del usuario.
+    en la lista de movimientos del usuario. Además, revierte automáticamente
+    los cambios que este movimiento causó en los saldos de las cuentas.
+    
+    Operaciones de reversión por tipo de movimiento:
+    - Ingreso: Decrementa el saldo de la cuenta destino
+    - Gasto: Incrementa el saldo de la cuenta origen
+    - Transferencia/Inversión: Incrementa origen y decrementa destino
     
     Args:
         movement_id (int): Índice del movimiento a eliminar
         
     Returns:
         JSON: Mensaje de confirmación de eliminación exitosa
+        400: Si no se puede revertir (ej: saldo insuficiente en cuenta destino)
         401: Si no hay sesión activa
         404: Si el usuario o el movimiento no existen
         500: Si hay error al eliminar de la base de datos
@@ -260,6 +294,12 @@ def delete_movement(movement_id):
         if movement_id < 0 or movement_id >= len(movements):
             return jsonify({"error": "Movement not found"}), 404
         
+        # Obtener el movimiento a eliminar antes de eliminarlo
+        movement_to_delete = movements[movement_id]
+        
+        # Revertir los cambios en los saldos de las cuentas
+        current_app.config['DATABASE'].revert_account_balances(user, movement_to_delete)
+        
         # Eliminar el movimiento en la posición especificada
         movements.pop(movement_id)
         
@@ -268,5 +308,8 @@ def delete_movement(movement_id):
         
         # Retornar confirmación de eliminación exitosa
         return jsonify({'message': 'Movement deleted successfully'}), 200
+    except ValueError as ve:
+        # Errores de validación de negocio (ej: no se puede revertir por saldo insuficiente)
+        return jsonify({'error': str(ve)}), 400
     except Exception as e:
         return jsonify({'error': f'Error deleting movement: {str(e)}'}), 500

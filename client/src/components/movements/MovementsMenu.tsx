@@ -85,16 +85,15 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
    * Elimina un movimiento específico de la lista local y del servidor
    * @param index - Índice del movimiento en la lista local
    */
-  const deleteMovement = (index: number) => {
+  const deleteMovement = async (index: number) => {
     if (!movements) return;
     
     try {
-      // Filtrar el movimiento de la lista local para actualización inmediata de UI
-      const updatedMovements = movements.filter((_, i) => i !== index);
-      setMovements(updatedMovements);
-      
       // Enviar petición al servidor para eliminar el movimiento
-      fetchDeleteMovement(movements[index].id, expireSession);
+      await fetchDeleteMovement(movements[index].id, expireSession);
+      
+      // Recargar la lista de movimientos desde el servidor
+      await refetchMovements();
       
       // Mostrar mensaje de éxito
       showSuccessMessage("Movimiento eliminado exitosamente");
@@ -105,12 +104,17 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
   };
 
   /**
-   * Añade un nuevo movimiento a la lista local
-   * @param movement - Nuevo movimiento a añadir
+   * Maneja la creación exitosa de un nuevo movimiento
+   * Recarga la lista desde el servidor
    */
-  const addMovement = (movement: Movement) => {
-    setMovements(current => current ? [...current, movement] : [movement]);
-    showSuccessMessage("Movimiento creado exitosamente");
+  const handleMovementCreated = async () => {
+    try {
+      // Recargar la lista de movimientos desde el servidor
+      await refetchMovements();
+      showSuccessMessage("Movimiento creado exitosamente");
+    } catch (error) {
+      showErrorMessage("Error al recargar los movimientos.");
+    }
   };
 
   /**
@@ -125,7 +129,7 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
   };
 
   // Hook personalizado para obtener los movimientos del servidor al montar el componente
-  useFetchMovements(setMovements, expireSession);
+  const refetchMovements = useFetchMovements(setMovements, expireSession);
 
   return (
     <div className="p-4">
@@ -161,7 +165,7 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
             <MovementsTableContent
               table={table}
               onDeleteMovement={deleteMovement}
-              onAddMovement={addMovement}
+              onAddMovement={handleMovementCreated}
               onShowError={showErrorMessage}
               expireSession={expireSession}
               newAccount={{isNewAccount, setIsNewAccount}}

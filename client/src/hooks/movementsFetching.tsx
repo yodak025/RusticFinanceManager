@@ -107,15 +107,26 @@ export default function useFetchMovements(
   setMovements: React.Dispatch<React.SetStateAction<Movement[] | null>>,
   onSessionExpired: () => void
 ) {
+  const fetchMovements = async () => {
+    try {
+      const ids = await fetchMovementsIds();
+      const fetchedMovements = await Promise.all(
+        ids.map((id) => fetchMovementById(id, onSessionExpired))
+      );
+      setMovements(fetchedMovements);
+      console.log("Movements fetched:", fetchedMovements);
+    } catch (error) {
+      console.error("Error cargando movimientos:", error);
+      setMovements([]);
+    }
+  };
+
   useEffect(() => {
-    fetchMovementsIds()
-      .then((ids) => Promise.all(ids.map((id) => fetchMovementById(id, onSessionExpired))))
-      .then((fetchedMovements) => {
-        setMovements(fetchedMovements);
-        console.log("Movements fetched:", fetchedMovements);
-      })
-      .catch((error) => console.error("Error cargando movimientos:", error));
+    fetchMovements();
   }, [onSessionExpired]);
+
+  // Retornar la función para poder llamarla manualmente
+  return fetchMovements;
 }
 
 export async function fetchDeleteMovement(
@@ -128,18 +139,20 @@ export async function fetchDeleteMovement(
     });
 
     const data = await response.json();
+    
     if (response.status === 401) {
       onSessionExpired();
       throw new Error("Session expired, please log in again.");
     }
 
-    if (response.ok) {
-      console.log("Movimiento eliminado exitosamente");
-    } else {
-      console.error(data.error || "Error eliminando movimiento");
+    if (!response.ok) {
+      throw new Error(data.error || "Error eliminando movimiento");
     }
+
+    console.log("Movimiento eliminado exitosamente");
   } catch (err) {
-    console.error("Error de conexión");
+    console.error("Error eliminando movimiento:", err);
+    throw err; // Re-lanzar el error para que pueda ser capturado por el componente
   }
 }
 
@@ -173,12 +186,13 @@ export async function fetchCreateMovement(
       throw new Error("Session expired, please log in again.");
     }
 
-    if (response.ok) {
-      console.log(data.message || "Movimiento creado exitosamente");
-    } else {
-      console.error(data.error || "Error creando movimiento");
+    if (!response.ok) {
+      throw new Error(data.error || "Error creando movimiento");
     }
+
+    console.log(data.message || "Movimiento creado exitosamente");
   } catch (err) {
-    console.error("Error de conexión");
+    console.error("Error creando movimiento:", err);
+    throw err; // Re-lanzar el error para que pueda ser capturado por el componente
   }
 }

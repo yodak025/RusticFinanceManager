@@ -6,7 +6,7 @@ import { Button } from "../ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 
 interface NewMovementFormProps {
-  onCreateMovement: (movement: Movement) => void;
+  onCreateMovement: () => void;
   onShowError: (message: string) => void;
   onExpiredSession: () => void;
   newAccount: {
@@ -92,10 +92,12 @@ const NewMovementForm: React.FC<NewMovementFormProps> = ({
   const createMovement = async () => {
     try {
       await fetchCreateMovement(movement, onExpiredSession);
-      onCreateMovement(movement);
+      onCreateMovement(); // Llamar sin parámetros para recargar la lista
       resetForm();
-    } catch (err) {
-      onShowError('Error creando movimiento');
+    } catch (err: any) {
+      // Mostrar el mensaje de error específico del servidor
+      const errorMessage = err.message || 'Error creando movimiento';
+      onShowError(errorMessage);
     }
   };
 
@@ -113,7 +115,7 @@ const NewMovementForm: React.FC<NewMovementFormProps> = ({
    * Se deshabilita para gastos ya que el origen es implícito (usuario)
    */
   const isOriginDisabled = () => {
-    return movement.type === MovementType.EXPENSE;
+    return movement.type === MovementType.INCOME;
   };
 
   /**
@@ -121,7 +123,7 @@ const NewMovementForm: React.FC<NewMovementFormProps> = ({
    * Se deshabilita para ingresos ya que el destino es implícito (usuario)
    */
   const isDestinationDisabled = () => {
-    return movement.type === MovementType.INCOME;
+    return movement.type === MovementType.EXPENSE;
   };
 
   return (

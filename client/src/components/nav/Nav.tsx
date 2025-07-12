@@ -21,6 +21,8 @@ export function Nav({ setMenu }: NavProps) {
       </button>
     );
   };
+
+  
   return (
     <nav className="bg-gray-200 dark:bg-gray-800 p-4 flex flex-row justify-between items-start ">
       <div className="flex-1 flex justify-center">
