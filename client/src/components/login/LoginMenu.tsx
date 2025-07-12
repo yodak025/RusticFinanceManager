@@ -1,10 +1,12 @@
 import { useState} from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
+import { useAuthStore } from '../../store/storeAuth';
 
-const Login= ({isLoggedIn}:{isLoggedIn: (bool:boolean) => void}) => {
+const Login= () => {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [inputValue, setInputValue] = useState('');
+  const { logIn } = useAuthStore();
 
   const handleLogin = async () => {
     try {
@@ -17,7 +19,7 @@ const Login= ({isLoggedIn}:{isLoggedIn: (bool:boolean) => void}) => {
       });
       
       if (response.ok) {
-        isLoggedIn(true);
+        logIn();
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -35,7 +37,7 @@ const Login= ({isLoggedIn}:{isLoggedIn: (bool:boolean) => void}) => {
       });
       
       if (response.ok) {
-        isLoggedIn(true);
+        logIn();
       }
     } catch (error) {
       console.error('Register error:', error);

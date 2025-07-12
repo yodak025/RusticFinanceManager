@@ -1,5 +1,6 @@
 import { type GeneralInfo } from "@/types/generalInfoTypes";
 import { useEffect } from "react";
+import { useAuthStore } from "@/store/storeAuth";
 
 const isValidGeneralInfo = (data: any): data is GeneralInfo => {
   return (
@@ -40,11 +41,12 @@ const fetchGeneralInfo = async (onSessionExpired: ()=> void): Promise<GeneralInf
 };
 
 export default function useFetchGeneralInfo(
-  setGeneralInfo: React.Dispatch<React.SetStateAction<GeneralInfo | null>>,
-  onSessionExpired: () => void
+  setGeneralInfo: React.Dispatch<React.SetStateAction<GeneralInfo | null>>
 ) {
+  const { logOut } = useAuthStore();
+  
   useEffect(() => {
-    fetchGeneralInfo(onSessionExpired)
+    fetchGeneralInfo(logOut)
       .then((data) => {
         console.log("Información general obtenida:", data);
         setGeneralInfo(data);
@@ -52,5 +54,5 @@ export default function useFetchGeneralInfo(
       .catch((error) => {
         console.error("Error al obtener información general:", error);
       });
-  }, [onSessionExpired]);
+  }, [logOut, setGeneralInfo]);
 }

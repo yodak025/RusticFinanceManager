@@ -8,7 +8,6 @@ import { TableCell, TableRow } from "@/components/ui/table";
 interface NewMovementFormProps {
   onCreateMovement: () => void;
   onShowError: (message: string) => void;
-  onExpiredSession: () => void;
   newAccount: {
     isNewAccount: boolean;
     setIsNewAccount: (value: boolean) => void;
@@ -22,7 +21,6 @@ interface NewMovementFormProps {
 const NewMovementForm: React.FC<NewMovementFormProps> = ({
   onCreateMovement,
   onShowError,
-  onExpiredSession,
   newAccount
 }) => {
   // Estado para controlar si el formulario está en modo de creación
@@ -30,7 +28,7 @@ const NewMovementForm: React.FC<NewMovementFormProps> = ({
   const { isNewAccount, setIsNewAccount }  = newAccount 
   
   // Hook para obtener las cuentas del usuario
-  const accounts = useFetchAccounts(onExpiredSession, isNewAccount, setIsNewAccount);
+  const accounts = useFetchAccounts(isNewAccount, setIsNewAccount);
   
   // Estados para almacenar los datos del movimiento que se está creando
   const [movement, setMovement] = useState<Movement>({
@@ -91,7 +89,7 @@ const NewMovementForm: React.FC<NewMovementFormProps> = ({
    */
   const createMovement = async () => {
     try {
-      await fetchCreateMovement(movement, onExpiredSession);
+      await fetchCreateMovement(movement);
       onCreateMovement(); // Llamar sin parámetros para recargar la lista
       resetForm();
     } catch (err: any) {

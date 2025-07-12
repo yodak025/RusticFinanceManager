@@ -8,7 +8,6 @@ interface NewAccountModalProps {
   onAccountCreated: () => void;
   onShowError: (message: string) => void;
   onShowSuccess: (message: string) => void;
-  onExpiredSession: () => void;
 }
 
 /**
@@ -20,8 +19,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({
   onClose,
   onAccountCreated,
   onShowError,
-  onShowSuccess,
-  onExpiredSession
+  onShowSuccess
 }) => {
   // Estados para los datos de la nueva cuenta
   const [accountName, setAccountName] = useState('');
@@ -76,8 +74,7 @@ const NewAccountModal: React.FC<NewAccountModalProps> = ({
         { 
           name: accountName.trim(), 
           amount: initialAmount 
-        },
-        onExpiredSession
+        }
       );
       
       onShowSuccess('Cuenta creada exitosamente');

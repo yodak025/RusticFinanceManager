@@ -84,11 +84,20 @@ const columns: ColumnDef<Investment>[] = [
   }
 ];
 
-import { flexRender } from "@tanstack/react-table";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 
-import { TableCell, TableRow } from "@/components/ui/table";
-
-import BaseTable from "../tables/BaseTable";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 import {
   Collapsible,
@@ -101,41 +110,36 @@ const InvestmentsTableContent = ({ table }: any) => {
     <>
       {table.getRowModel().rows?.length ? (
         table.getRowModel().rows.map((row: any) => (
-          <>
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                
-                {row.getVisibleCells().map((cell: any) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-
-              </TableRow>
-              <Collapsible>
-        <CollapsibleTrigger className="w-full text-left">
-          Ver Detalles
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          {table.getRowModel().rows.map((row: any) => (
-            <div key={row.id} className="p-4">
-              <h3 className="font-bold">Detalles de {row.original.entityName}</h3>
-              {row.original.entries.map((entry: Entry, index: number) => (
-                <div key={index} className="mb-2">
-                  <p>Fecha: {entry.date}</p>
-                  <p>Monto Local: {entry.localAmount}</p>
-                  <p>Rentabilidad Local: {entry.localRentability}</p>
-                  <p>Ganancia Local: {entry.localProfit}</p>
-                  <p>Valor Parcial: {entry.partialValue}</p>
-                </div>
+          <Collapsible key={row.id}>
+            <TableRow data-state={row.getIsSelected() && "selected"}>
+              {row.getVisibleCells().map((cell: any) => (
+                <TableCell key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
               ))}
-            </div>
-          ))}
-        </CollapsibleContent>
-      </Collapsible>
-          </>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={columns.length}>
+                <CollapsibleTrigger className="w-full text-left p-2 hover:bg-gray-50">
+                  Ver Detalles de {row.original.entityName}
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="p-4 bg-gray-50">
+                    <h3 className="font-bold mb-2">Detalles de {row.original.entityName}</h3>
+                    {row.original.entries.map((entry: Entry, index: number) => (
+                      <div key={index} className="mb-2 p-2 border-b">
+                        <p><strong>Fecha:</strong> {entry.date}</p>
+                        <p><strong>Monto Local:</strong> {entry.localAmount}</p>
+                        <p><strong>Rentabilidad Local:</strong> {entry.localRentability}</p>
+                        <p><strong>Ganancia Local:</strong> {entry.localProfit}</p>
+                        <p><strong>Valor Parcial:</strong> {entry.partialValue}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </TableCell>
+            </TableRow>
+          </Collapsible>
         ))
       ) : (
         <TableRow>
@@ -143,22 +147,44 @@ const InvestmentsTableContent = ({ table }: any) => {
             No results.
           </TableCell>
         </TableRow>
-        
       )}
-      
     </>
   );
 };
 
 export default function InvestmentsMenu() {
+  // Configuración de la tabla con react-table
+  const table = useReactTable({
+    data: investmentsExample,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
   return (
     <div className="p-4">
-      <BaseTable data={investmentsExample} columns={columns}>
-        {(table: any) => (
-          // Tu contenido que usa table
-          <InvestmentsTableContent table={table} />
-        )}
-      </BaseTable>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            <InvestmentsTableContent table={table} />
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

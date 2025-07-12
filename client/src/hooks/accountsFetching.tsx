@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/storeAuth";
 
 // Tipo para representar una cuenta
 export interface Account {
@@ -8,17 +9,16 @@ export interface Account {
 
 /**
  * Hook personalizado para obtener las cuentas del usuario autenticado
- * @param onSessionExpired - Función a ejecutar si la sesión ha expirado
  * @param isNewAccount - Indica si se ha creado una nueva cuenta
  * @param setIsNewAccount - Función para actualizar el estado de si se ha creado una nueva cuenta
  * @returns Array de cuentas o null si aún está cargando
  */
 export function useFetchAccounts(
-  onSessionExpired: () => void,
   isNewAccount: boolean,
   setIsNewAccount: (value: boolean) => void
 ): Account[] | null {
   const [accounts, setAccounts] = useState<Account[] | null>(null);
+  const { logOut } = useAuthStore();
 
   useEffect(() => {
     if (isNewAccount) {
@@ -30,7 +30,7 @@ export function useFetchAccounts(
         const response = await fetch("/accounts");
 
         if (response.status === 401) {
-          onSessionExpired();
+          logOut();
           throw new Error("Session expired, please log in again.");
         }
 
@@ -56,7 +56,7 @@ export function useFetchAccounts(
         // Obtener los detalles de cada cuenta
         const accountPromises = [];
         for (let i = 0; i < numberOfAccounts; i++) {
-          accountPromises.push(fetchAccountById(i, onSessionExpired));
+          accountPromises.push(fetchAccountById(i));
         }
 
         const fetchedAccounts = await Promise.all(accountPromises);
@@ -69,7 +69,7 @@ export function useFetchAccounts(
     };
 
     fetchAccounts();
-  }, [onSessionExpired, isNewAccount, setIsNewAccount]);
+  }, [logOut, isNewAccount, setIsNewAccount]);
 
   return accounts;
 }
@@ -77,18 +77,17 @@ export function useFetchAccounts(
 /**
  * Obtiene los detalles de una cuenta específica por su ID
  * @param id - ID de la cuenta
- * @param onSessionExpired - Función a ejecutar si la sesión ha expirado
  * @returns Promesa que resuelve con los datos de la cuenta
  */
 const fetchAccountById = async (
-  id: number,
-  onSessionExpired: () => void
+  id: number
 ): Promise<Account> => {
+  const { logOut } = useAuthStore.getState();
   try {
     const response = await fetch(`/accounts/${id}`);
 
     if (response.status === 401) {
-      onSessionExpired();
+      logOut();
       throw new Error("Session expired, please log in again.");
     }
 
@@ -120,13 +119,12 @@ const fetchAccountById = async (
 /**
  * Crea una nueva cuenta financiera
  * @param account - Datos de la nueva cuenta (nombre y saldo inicial)
- * @param onSessionExpired - Función a ejecutar si la sesión ha expirado
  * @returns Promesa que resuelve cuando la cuenta se crea exitosamente
  */
 export const fetchCreateAccount = async (
-  account: { name: string; amount: number },
-  onSessionExpired: () => void
+  account: { name: string; amount: number }
 ): Promise<void> => {
+  const { logOut } = useAuthStore.getState();
   try {
     const response = await fetch("/accounts", {
       method: "POST",
@@ -137,7 +135,7 @@ export const fetchCreateAccount = async (
     });
 
     if (response.status === 401) {
-      onSessionExpired();
+      logOut();
       throw new Error("Session expired, please log in again.");
     }
 

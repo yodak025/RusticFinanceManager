@@ -1,5 +1,6 @@
 import { type Movement, MovementType } from "@/types/movementTypes";
 import { useEffect } from "react";
+import { useAuthStore } from "@/store/storeAuth";
 
 const fetchMovementsIds = async (): Promise<number[]> => {
   try {
@@ -35,13 +36,13 @@ const fetchMovementsIds = async (): Promise<number[]> => {
 };
 
 const fetchMovementById = async (
-  id: number,
-  onSessionExpired: () => void
+  id: number
 ): Promise<Movement> => {
+  const { logOut } = useAuthStore.getState();
   try {
     const response = await fetch(`/movements/${id}`);
     if (response.status === 401) {
-      onSessionExpired();
+      logOut();
       throw new Error("Session expired, please log in again.");
     }
     if (!response.ok) {
@@ -104,14 +105,15 @@ const fetchMovementById = async (
 };
 
 export default function useFetchMovements(
-  setMovements: React.Dispatch<React.SetStateAction<Movement[] | null>>,
-  onSessionExpired: () => void
+  setMovements: React.Dispatch<React.SetStateAction<Movement[] | null>>
 ) {
+  const { logOut } = useAuthStore();
+  
   const fetchMovements = async () => {
     try {
       const ids = await fetchMovementsIds();
       const fetchedMovements = await Promise.all(
-        ids.map((id) => fetchMovementById(id, onSessionExpired))
+        ids.map((id) => fetchMovementById(id))
       );
       setMovements(fetchedMovements);
       console.log("Movements fetched:", fetchedMovements);
@@ -123,16 +125,16 @@ export default function useFetchMovements(
 
   useEffect(() => {
     fetchMovements();
-  }, [onSessionExpired]);
+  }, [logOut]);
 
   // Retornar la función para poder llamarla manualmente
   return fetchMovements;
 }
 
 export async function fetchDeleteMovement(
-  id: number,
-  onSessionExpired: () => void
+  id: number
 ) {
+  const { logOut } = useAuthStore.getState();
   try {
     const response = await fetch(`/movements/${id}`, {
       method: "DELETE",
@@ -141,7 +143,7 @@ export async function fetchDeleteMovement(
     const data = await response.json();
     
     if (response.status === 401) {
-      onSessionExpired();
+      logOut();
       throw new Error("Session expired, please log in again.");
     }
 
@@ -157,9 +159,9 @@ export async function fetchDeleteMovement(
 }
 
 export async function fetchCreateMovement(
-  movement: Movement,
-  onSessionExpired: () => void
+  movement: Movement
 ) {
+  const { logOut } = useAuthStore.getState();
   try {
     // Convert date from DD-MM-YYYY to YYYY-MM-DD if present
     const { id, ...movementToSend } = movement;
@@ -182,7 +184,7 @@ export async function fetchCreateMovement(
     const data = await response.json();
 
     if (response.status === 401) {
-      onSessionExpired();
+      logOut();
       throw new Error("Session expired, please log in again.");
     }
 

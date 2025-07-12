@@ -1,23 +1,33 @@
 import { useState } from "react";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { type Movement } from "@/types/movementTypes";
+import { movementColumns } from "./movementColumns";
 import useFetchMovements, { fetchDeleteMovement } from "@/hooks/movementsFetching";
-import BaseTable from "../tables/BaseTable";
-import MovementsTableContent from "./MovementsTableContent";
+import MovementRow from "./MovementRow";
+import NewMovementForm from "./NewMovementForm";
 import LoadingState from "./LoadingState";
 import AlertNotification from "./AlertNotification";
 import NewAccountModal from "./NewAccountModal";
-import { Button } from "../ui/button";
-import { movementColumns } from "./movementColumns";
 
-interface MovementsMenuProps {
-  expireSession: () => void;
-}
+interface MovementsTableProps {}
 
 /**
- * Componente principal del menú de movimientos financieros
- * Gestiona el estado global de los movimientos y coordina las operaciones CRUD
+ * Componente unificado que maneja toda la funcionalidad de la tabla de movimientos
  */
-export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
+export default function MovementsTable({}: MovementsTableProps) {
   // Estado para almacenar la lista de movimientos obtenidos del servidor
   const [movements, setMovements] = useState<Movement[] | null>(null);
   
@@ -36,16 +46,12 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
    * @param message - Mensaje a mostrar
    */
   const showSuccessMessage = (message: string) => {
-    // Limpiar mensaje anterior si existe
     if (successMessage) {
       setSuccessMessage("");
-      // Pequeño delay para evitar conflictos visuales
       setTimeout(() => setSuccessMessage(message), 100);
     } else {
       setSuccessMessage(message);
     }
-    
-    // Auto-limpiar después de 3 segundos
     setTimeout(() => setSuccessMessage(""), 3000);
   };
 
@@ -54,16 +60,12 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
    * @param message - Mensaje de error a mostrar
    */
   const showErrorMessage = (message: string) => {
-    // Limpiar mensaje anterior si existe
     if (errorMessage) {
       setErrorMessage("");
-      // Pequeño delay para evitar conflictos visuales
       setTimeout(() => setErrorMessage(message), 100);
     } else {
       setErrorMessage(message);
     }
-    
-    // Auto-limpiar después de 3 segundos
     setTimeout(() => setErrorMessage(""), 3000);
   };
 
@@ -89,16 +91,10 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
     if (!movements) return;
     
     try {
-      // Enviar petición al servidor para eliminar el movimiento
-      await fetchDeleteMovement(movements[index].id, expireSession);
-      
-      // Recargar la lista de movimientos desde el servidor
+      await fetchDeleteMovement(movements[index].id);
       await refetchMovements();
-      
-      // Mostrar mensaje de éxito
       showSuccessMessage("Movimiento eliminado exitosamente");
     } catch (error) {
-      // Mostrar mensaje de error
       showErrorMessage("Error al eliminar el movimiento. Intenta nuevamente.");
     }
   };
@@ -109,7 +105,6 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
    */
   const handleMovementCreated = async () => {
     try {
-      // Recargar la lista de movimientos desde el servidor
       await refetchMovements();
       showSuccessMessage("Movimiento creado exitosamente");
     } catch (error) {
@@ -124,16 +119,25 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
   const handleAccountCreated = () => {
     setIsNewAccountModalOpen(false);
     showSuccessMessage("Cuenta creada exitosamente");
-    setIsNewAccount(true); // Actualiza el estado para indicar que se ha creado una
-    // Las cuentas se recargarán automáticamente en los selects del formulario
+    setIsNewAccount(true);
   };
 
-  // Hook personalizado para obtener los movimientos del servidor al montar el componente
-  const refetchMovements = useFetchMovements(setMovements, expireSession);
+  // Hook personalizado para obtener los movimientos del servidor
+  const refetchMovements = useFetchMovements(setMovements);
+
+  // Configuración de la tabla con react-table
+  const table = useReactTable({
+    data: movements || [],
+    columns: movementColumns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  // Obtener el número total de columnas para el colspan
+  const totalColumns = table.getAllColumns().length + 1; // +1 por la columna de acciones
 
   return (
     <div className="p-4">
-      {/* Notificación centralizada fuera de la tabla */}
+      {/* Notificación centralizada */}
       <AlertNotification
         message={successMessage}
         error={errorMessage}
@@ -158,20 +162,54 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
       {!movements ? (
         <LoadingState />
       ) : (
-        
-        /* Tabla principal con los movimientos y funcionalidad de gestión */
-        <BaseTable data={movements} columns={movementColumns}>
-          {(table: any) => (
-            <MovementsTableContent
-              table={table}
-              onDeleteMovement={deleteMovement}
-              onAddMovement={handleMovementCreated}
-              onShowError={showErrorMessage}
-              expireSession={expireSession}
-              newAccount={{isNewAccount, setIsNewAccount}}
-            />
-          )}
-        </BaseTable>
+        /* Tabla integrada con funcionalidad completa */
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {/* Renderizar filas de movimientos existentes */}
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row: any) => (
+                  <MovementRow
+                    key={row.id}
+                    row={row}
+                    onDeleteMovement={deleteMovement}
+                  />
+                ))
+              ) : (
+                /* Mostrar mensaje cuando no hay movimientos */
+                <TableRow>
+                  <TableCell colSpan={totalColumns} className="h-24 text-center text-gray-500">
+                    No hay movimientos registrados. ¡Crea tu primer movimiento!
+                  </TableCell>
+                </TableRow>
+              )}
+              
+              {/* Formulario para crear nuevos movimientos */}
+              <NewMovementForm
+                onCreateMovement={handleMovementCreated}
+                onShowError={showErrorMessage}
+                newAccount={{isNewAccount, setIsNewAccount}}
+              />
+            </TableBody>
+          </Table>
+        </div>
       )}
 
       {/* Modal para crear nueva cuenta */}
@@ -181,7 +219,6 @@ export default function MovementsMenu({ expireSession }: MovementsMenuProps) {
         onAccountCreated={handleAccountCreated}
         onShowError={showErrorMessage}
         onShowSuccess={showSuccessMessage}
-        onExpiredSession={expireSession}
       />
     </div>
   );
