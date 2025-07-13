@@ -1,6 +1,6 @@
 import GeneralMenu from "./components/general/GeneralMenu";
 import InvestmentsMenu from "./components/investments/InvestmentsMenu";
-import MovementsMenu from "./components/movements/MovementsTable";
+import MovementsLayout from "./components/layout/movementsLayout";
 import Login from "./components/login/LoginMenu";
 import { useState } from "react";
 import { ThemeProvider } from "./hooks/ThemeContext";
@@ -17,7 +17,7 @@ function App() {
         <Nav setMenu={setMenu} />
         {menu === "general" && <GeneralMenu />}
         {menu === "investments" && <InvestmentsMenu />}
-        {menu === "movements" && <MovementsMenu />}
+        {menu === "movements" && <MovementsLayout />}
       </main>
     </ThemeProvider>
   );
